@@ -38,6 +38,7 @@ def main() -> None:
 
         if is_honeypot:
             scored["score"] *= 0.04
+        scored["raw_score"] = scored["score"]
         scored["is_honeypot"] = is_honeypot
         scored["honeypot_reasons"] = honeypot_reasons
         scored_candidates.append(scored)
@@ -47,7 +48,7 @@ def main() -> None:
         f"detected {honeypot_count} honeypots."
     )
 
-    scored_candidates.sort(key=lambda x: (-x["score"], x["candidate_id"]))
+    scored_candidates.sort(key=lambda x: (-x["raw_score"], x["candidate_id"]))
     top_k = scored_candidates[: args.top_k]
     honeypots_in_top = sum(1 for c in top_k if c["is_honeypot"])
     print(
@@ -57,8 +58,9 @@ def main() -> None:
 
     rows = []
     previous_score = None
+    top_raw_score = max(top_k[0]["raw_score"], 1e-9) if top_k else 1.0
     for rank, scored in enumerate(top_k, start=1):
-        score = round(float(scored["score"]), 6)
+        score = round(max(0.0, min(1.0, float(scored["raw_score"]) / top_raw_score)), 6)
         if previous_score is not None and score >= previous_score:
             score = max(0.0, round(previous_score - 0.000001, 6))
         previous_score = score

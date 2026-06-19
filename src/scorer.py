@@ -27,7 +27,7 @@ def compute_must_have_bonus(skill_groups: dict[str, float], career: dict) -> flo
     return min(0.12, bonus)
 
 
-def compute_career_multiplier(career: dict, current_title: str) -> float:
+def compute_career_multiplier(career: dict, current_title: str, notice_days: int = 60) -> float:
     title_lower = current_title.lower()
     hard_disqualifiers = {
         "marketing manager",
@@ -44,7 +44,8 @@ def compute_career_multiplier(career: dict, current_title: str) -> float:
         "supply chain",
     }
     if any(d in title_lower for d in hard_disqualifiers):
-        return 0.14 if career["ai_ml_fraction"] < 0.2 else 0.45
+        multiplier = 0.14 if career["ai_ml_fraction"] < 0.2 else 0.45
+        return multiplier
 
     base = 0.55 if career["is_consulting_only"] else 1.0
     ai_ml_bonus = min(0.28, career["ai_ml_fraction"] * 0.28)
@@ -53,7 +54,17 @@ def compute_career_multiplier(career: dict, current_title: str) -> float:
     product_bonus = min(0.10, product_fraction * 0.10)
     retrieval_bonus = 0.08 if career["retrieval_months"] >= 24 else 0.03 if career["retrieval_months"] >= 12 else 0.0
     penalty = career["disqualifying_fraction"] * 0.45 + career["management_only_fraction"] * 0.20
-    return max(0.10, min(1.2, base + ai_ml_bonus + prod_bonus + product_bonus + retrieval_bonus - penalty))
+    if notice_days <= 30:
+        notice_modifier = 1.05
+    elif notice_days <= 60:
+        notice_modifier = 1.00
+    elif notice_days <= 90:
+        notice_modifier = 0.92
+    else:
+        notice_modifier = 0.82
+    career_fit = min(1.2, base + ai_ml_bonus + prod_bonus + product_bonus + retrieval_bonus - penalty)
+    multiplier = career_fit * notice_modifier
+    return max(0.10, min(1.2, multiplier))
 
 
 def compute_availability_multiplier(platform: dict) -> float:
@@ -63,7 +74,7 @@ def compute_availability_multiplier(platform: dict) -> float:
 
 def score_candidate(features: dict) -> dict:
     skill_score = compute_skill_score(features["skill_groups"])
-    career_mult = compute_career_multiplier(features["career"], features["current_title"])
+    career_mult = compute_career_multiplier(features["career"], features["current_title"], features["notice_days"])
     availability_mult = compute_availability_multiplier(features["platform"])
 
     base = skill_score

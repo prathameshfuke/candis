@@ -243,11 +243,9 @@ def score_redrob_signals(signals: dict) -> dict:
         + 0.10 * interview_score
     )
     engagement = (
-        0.40 * github_score
-        + 0.25 * work_mode_score
+        0.65 * github_score
+        + 0.20 * work_mode_score
         + 0.15 * min(1.0, float(signals.get("profile_completeness_score", 50) or 50) / 100)
-        + 0.10 * min(1.0, int(signals.get("saved_by_recruiters_30d", 0) or 0) / 10)
-        + 0.10 * (1.0 if signals.get("verified_email") and signals.get("verified_phone") else 0.65)
     )
     return {
         "availability": availability,
@@ -296,10 +294,40 @@ def extract_all_features(candidate: dict) -> dict:
     career_analysis = score_career_for_role(career)
 
     assessment_scores = signals.get("skill_assessment_scores", {})
+    jd_relevant_assessment_keys = [
+        "python",
+        "machine learning",
+        "ml",
+        "nlp",
+        "data science",
+        "deep learning",
+        "ai",
+        "information retrieval",
+        "vector",
+        "embedding",
+        "sentence transformer",
+        "faiss",
+        "elasticsearch",
+        "recommendation",
+        "ranking",
+        "search",
+    ]
+    framework_noise_keys = [
+        "haystack",
+        "langchain",
+        "llamaindex",
+        "airflow",
+        "hadoop",
+        "excel",
+        "illustrator",
+        "opencv",
+        "javascript",
+    ]
     ai_assessments = [
         v
         for k, v in assessment_scores.items()
-        if match_groups_in_text(k) or any(x in k.lower() for x in ["python", "machine learning", "deep learning", "ai"])
+        if any(keyword in k.lower() for keyword in jd_relevant_assessment_keys)
+        and not any(noise in k.lower() for noise in framework_noise_keys)
     ]
     avg_assessment = sum(ai_assessments) / len(ai_assessments) if ai_assessments else 50.0
     certifications = candidate.get("certifications", [])
@@ -324,6 +352,7 @@ def extract_all_features(candidate: dict) -> dict:
         "platform": score_redrob_signals(signals),
         "has_ai_certs": has_ai_certs,
         "avg_assessment": avg_assessment,
+        "notice_days": int(signals.get("notice_period_days", 60) or 60),
         "country": profile.get("country", ""),
         "location": profile.get("location", ""),
         "profile": profile,
