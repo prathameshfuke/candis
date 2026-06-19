@@ -64,12 +64,13 @@ def main() -> None:
         if previous_score is not None and score >= previous_score:
             score = max(0.0, round(previous_score - 0.000001, 6))
         previous_score = score
+        reasoning_clean = generate_reasoning(scored).replace('"', "'").replace("\n", " ").strip()
         rows.append(
             {
                 "candidate_id": scored["candidate_id"],
                 "rank": rank,
                 "score": f"{score:.6f}",
-                "reasoning": generate_reasoning(scored),
+                "reasoning": reasoning_clean,
             }
         )
 

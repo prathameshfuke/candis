@@ -12,7 +12,7 @@ team_members:
 
 github_repo: "TBD"
 sandbox_link: "TBD"
-reproduce_command: "python rank.py --candidates ./candidates.jsonl --out ./submission.csv"
+reproduce_command: "py -3.14 rank.py --candidates ./candidates.jsonl --out ./submission.csv"
 
 compute:
   platform: "Local Windows CPU"

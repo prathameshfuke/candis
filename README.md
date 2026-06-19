@@ -1,6 +1,6 @@
-<![CDATA[<div align="center">
+<div align="center">
 
-# 🏆 Candis — Candidate Discovery Ranker
+# Candis — Candidate Discovery Ranker
 
 **A CPU-only, rule-based candidate ranking engine for the [Redrob India Runs Data & AI Challenge](https://redrob.io)**
 
@@ -14,7 +14,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Design Philosophy](#design-philosophy)
@@ -47,10 +47,10 @@ The ranker combines four key dimensions into a single score:
 ## Design Philosophy
 
 ```
-🎯 Deterministic   — Same input always produces the same ranking
-⚡ Fast             — Streams JSONL line-by-line; 100K candidates < 5 min on CPU
-🛡️ Anti-Gaming      — Multi-layered honeypot detection penalizes keyword stuffers
-🔌 Zero Dependencies — No GPU, no network, no external APIs during ranking
+Deterministic   — Same input always produces the same ranking
+Fast            — Streams JSONL line-by-line; 100K candidates < 5 min on CPU
+Anti-Gaming     — Multi-layered honeypot detection penalizes keyword stuffers
+Zero Dependencies — No GPU, no network, no external APIs during ranking
 ```
 
 ---
@@ -62,17 +62,17 @@ The ranker combines four key dimensions into a single score:
 ```mermaid
 graph TB
     subgraph Input
-        A["📄 candidates.jsonl<br/><i>100K+ profiles</i>"]
+        A["candidates.jsonl<br/><i>100K+ profiles</i>"]
     end
 
-    subgraph "🔄 Streaming Pipeline"
+    subgraph "Streaming Pipeline"
         B["Loader<br/><code>loader.py</code>"]
         C["Feature Extractor<br/><code>feature_extractor.py</code>"]
         D["Honeypot Detector<br/><code>honeypot_detector.py</code>"]
         E["Scorer<br/><code>scorer.py</code>"]
     end
 
-    subgraph "📊 Post-Processing"
+    subgraph "Post-Processing"
         F["Sort by Raw Score"]
         G["Top-K Selection"]
         H["Strictly Decreasing<br/>Score Enforcement"]
@@ -80,7 +80,7 @@ graph TB
     end
 
     subgraph Output
-        J["📝 submission.csv<br/><i>Top 100 ranked candidates</i>"]
+        J["submission.csv<br/><i>Top 100 ranked candidates</i>"]
     end
 
     A --> B
@@ -223,19 +223,19 @@ Each skill group aggregates dozens of keyword aliases (defined in [`skill_aliase
 
 ## Module Breakdown
 
-### `rank.py` — Orchestrator
+### rank.py — Orchestrator
 
 The main entry point. Streams candidates from JSONL, runs them through the scoring pipeline, sorts results, enforces strictly decreasing scores, and writes the final CSV.
 
-### `src/loader.py` — Data Loader
+### src/loader.py — Data Loader
 
 Memory-efficient streaming reader for `.jsonl` and `.jsonl.gz` files. Uses `ujson` for fast JSON parsing with a `json` stdlib fallback.
 
-### `src/skill_matcher.py` — Skill Alias Resolution
+### src/skill_matcher.py — Skill Alias Resolution
 
 Loads [`skill_aliases.json`](data/skill_aliases.json) and maps raw skill names and free-text mentions to 7 canonical skill groups via substring matching.
 
-### `src/feature_extractor.py` — Feature Engineering
+### src/feature_extractor.py — Feature Engineering
 
 The largest module. Extracts and normalizes features across four dimensions:
 
@@ -248,7 +248,7 @@ The largest module. Extracts and normalizes features across four dimensions:
 | `score_experience_fit()` | Sweet-spot scoring for 5–9 years experience |
 | `extract_all_features()` | Aggregates all features into a single candidate dict |
 
-### `src/honeypot_detector.py` — Fraud Detection
+### src/honeypot_detector.py — Fraud Detection
 
 Identifies fake/impossible profiles using multiple heuristics:
 
@@ -259,7 +259,7 @@ flowchart LR
     A --> D{"> 12 expert skills?"}
     A --> E{"> 18 months of<br/>overlapping roles?"}
 
-    B -->|"Yes"| F["🚩 HONEYPOT"]
+    B -->|"Yes"| F["HONEYPOT"]
     C -->|"Yes"| F
     D -->|"Yes"| G["Flag added"]
     E -->|"Yes"| G
@@ -269,7 +269,7 @@ flowchart LR
     style G fill:#ecc94b,stroke:#d69e2e,color:#1a202c
 ```
 
-### `src/scorer.py` — Scoring Engine
+### src/scorer.py — Scoring Engine
 
 Combines all features into the final score using a multiplicative model:
 
@@ -279,7 +279,7 @@ Final Score = Base Score × Career Multiplier × Availability Multiplier
 
 Where **Base Score** includes skill fit, must-have bonuses, experience fit, education, assessments, and certifications.
 
-### `src/output_writer.py` — CSV Writer
+### src/output_writer.py — CSV Writer
 
 Utility module for writing the ranked output to CSV format.
 
@@ -289,7 +289,7 @@ Utility module for writing the ranked output to CSV format.
 
 ```
 candis/
-├── rank.py                      # 🚀 Main entry point & orchestrator
+├── rank.py                      # Main entry point & orchestrator
 ├── requirements.txt             # Dependencies (ujson only)
 ├── submission.csv               # Generated output
 ├── submission_metadata.yaml     # Challenge submission metadata
@@ -304,16 +304,6 @@ candis/
 │
 ├── data/
 │   └── skill_aliases.json       # 7 skill groups with 90+ keyword aliases
-│
-└── [PUB] India_runs_data_and_ai_challenge/
-    └── India_runs_data_and_ai_challenge/
-        ├── candidates.jsonl         # 📦 100K+ candidate profiles (~465 MB)
-        ├── candidate_schema.json    # Profile schema reference
-        ├── job_description.docx     # Target JD: Senior AI Engineer
-        ├── sample_candidates.json   # Small sample for testing
-        ├── sample_submission.csv    # Expected output format
-        ├── validate_submission.py   # Official submission validator
-        └── ...                      # Additional challenge docs
 ```
 
 ---
@@ -343,12 +333,8 @@ pip install -r requirements.txt
 ```bash
 # Generate the ranked submission
 python rank.py \
-  --candidates "./[PUB] India_runs_data_and_ai_challenge/India_runs_data_and_ai_challenge/candidates.jsonl" \
+  --candidates "./candidates.jsonl" \
   --out submission.csv
-
-# Validate the output
-python "./[PUB] India_runs_data_and_ai_challenge/India_runs_data_and_ai_challenge/validate_submission.py" \
-  submission.csv
 ```
 
 ### Options
@@ -438,8 +424,8 @@ flowchart TB
 | JSON Parsing | `ujson` (with `json` fallback) |
 | Compute | CPU-only, single-threaded |
 | Dependencies | 1 (`ujson>=5.0.0`) |
-| GPU Required | ❌ No |
-| Network Required | ❌ No |
+| GPU Required | No |
+| Network Required | No |
 | AI Tools Used | Codex (development assistance only) |
 
 ---
@@ -451,4 +437,3 @@ flowchart TB
 *Team Candis*
 
 </div>
-]]>

@@ -99,36 +99,68 @@ def generate_reasoning(scored: dict) -> str:
     f = scored["features"]
     career = f["career"]
     platform = f["platform"]
-    skill_names = {
-        "embeddings": "embeddings",
-        "vector_db": "vector search",
-        "ranking_retrieval": "ranking/IR",
+    profile = f["profile"]
+
+    title = profile.get("current_title", "")
+    company = profile.get("current_company", "")
+    years = f["years"]
+    notice = f["notice_days"]
+    response = platform["response_rate"]
+    github = platform.get("github_activity_raw", -1)
+    last_active_days = platform["days_inactive"]
+    desc_score = f.get("description_score", 0.0)
+
+    skill_label = {
+        "embeddings": "embedding retrieval",
+        "vector_db": "vector DB",
+        "ranking_retrieval": "ranking/IR systems",
         "python_strong": "Python",
-        "nlp_ir": "NLP/RAG",
+        "nlp_ir": "NLP/IR",
         "production_ml": "production ML",
         "llm_finetuning": "LLM fine-tuning",
     }
-    top_groups = [
-        skill_names[g]
-        for g, score in sorted(f["skill_groups"].items(), key=lambda x: x[1], reverse=True)
-        if score >= 0.35 and g in skill_names
-    ][:4]
-    strengths = ", ".join(top_groups) if top_groups else "limited directly matched AI/IR skills"
-    ai_years = career["ai_ml_months"] / 12
-    sentence = f"{f['current_title']} with {f['years']:.1f} yrs; {strengths}"
-    if ai_years >= 1:
-        sentence += f"; ~{ai_years:.1f} yrs AI/ML-aligned work"
+    top_skills = sorted(f["skill_groups"].items(), key=lambda x: x[1], reverse=True)[:2]
+    top_skill_str = " and ".join(
+        skill_label.get(group, group) for group, score in top_skills if score > 0.3
+    )
+    if not top_skill_str:
+        top_skill_str = "limited direct AI/IR skill evidence"
+
+    prod_signal = "shipped production retrieval systems" if desc_score > 0.5 else "applied ML background"
+    s1 = f"{title} at {company} with {years:.1f} yrs experience; {top_skill_str}; {prod_signal}."
+
     concerns = []
+    positives = []
+
+    if notice > 90:
+        concerns.append(f"notice period {notice}d (JD prefers sub-30)")
+    elif notice <= 30:
+        positives.append(f"available in {notice}d")
+
+    if last_active_days > 90:
+        concerns.append(f"inactive {last_active_days}d")
+
+    if response < 0.25:
+        concerns.append(f"low recruiter response rate ({response:.0%})")
+    elif response > 0.80:
+        positives.append(f"high response rate ({response:.0%})")
+
+    if github > 50:
+        positives.append(f"strong GitHub activity ({github:.0f})")
+    elif github == -1:
+        concerns.append("no GitHub linked")
+
     if career["is_consulting_only"]:
-        concerns.append("consulting-heavy career")
-    if platform["days_inactive"] > 90:
-        concerns.append(f"inactive {platform['days_inactive']} days")
-    if platform["response_rate"] < 0.2:
-        concerns.append(f"low response rate {platform['response_rate']:.0%}")
-    if platform["notice_period_days"] > 90:
-        concerns.append("notice period over 90 days")
+        concerns.append("entire career in IT services")
+
     if career["disqualifying_fraction"] > 0.45:
         concerns.append("mostly non-ML roles")
+
     if concerns:
-        return f"{sentence}. Concern: {'; '.join(concerns[:2])}."
-    return f"{sentence}. Strong availability and career fit signals for the JD."
+        s2 = "Concern: " + "; ".join(concerns[:2]) + "."
+    elif positives:
+        s2 = "Strong availability signals: " + "; ".join(positives[:2]) + "."
+    else:
+        s2 = "No major concerns; reasonable fit across skill and behavioral signals."
+
+    return f"{s1} {s2}"

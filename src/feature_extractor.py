@@ -307,6 +307,7 @@ def score_redrob_signals(signals: dict) -> dict:
         "notice_score": notice_score,
         "response_rate": response_rate,
         "github_score": github_score,
+        "github_activity_raw": github,
         "days_inactive": days_inactive,
         "notice_period_days": notice,
         "offer_score": offer_score,
