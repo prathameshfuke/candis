@@ -83,6 +83,7 @@ def score_candidate(features: dict) -> dict:
     base += (features["edu_score"] - 0.5) * 0.04
     base += (features["avg_assessment"] - 50) / 1200
     base += 0.025 if features["has_ai_certs"] else 0.0
+    base += features["description_score"] * 0.15
     final = max(0.0, base * career_mult * availability_mult)
     return {
         "candidate_id": features["candidate_id"],

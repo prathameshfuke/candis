@@ -81,6 +81,47 @@ ENGINEERING_TITLES = {
     "data engineer",
 }
 
+PRODUCTION_RETRIEVAL_PHRASES = [
+    "embedding-based search",
+    "semantic search",
+    "vector search",
+    "ranking system",
+    "retrieval system",
+    "recommendation system",
+    "shipped",
+    "production",
+    "served",
+    "deployed to",
+    "30m",
+    "35m",
+    "50m",
+    "100m",
+    "million",
+    "at scale",
+    "migrated from keyword",
+    "bm25",
+    "hybrid search",
+    "a/b test",
+    "ndcg",
+    "mrr",
+    "offline evaluation",
+    "reranker",
+    "re-ranking",
+    "two-stage",
+    "candidate retrieval",
+]
+
+
+def score_career_descriptions(career_history: list[dict]) -> float:
+    """Score career text for production retrieval and ranking systems work."""
+    total_hits = 0.0
+    for role in career_history:
+        desc = role.get("description", "").lower()
+        hits = sum(1 for phrase in PRODUCTION_RETRIEVAL_PHRASES if phrase in desc)
+        weight = 1.3 if role.get("is_current", False) else 1.0
+        total_hits += hits * weight
+    return min(1.0, total_hits / 8.0)
+
 
 def extract_candidate_skill_groups(skills: list[dict], text_groups: set[str] | None = None) -> dict[str, float]:
     """Compute trust-weighted canonical skill group scores."""
@@ -222,7 +263,16 @@ def score_redrob_signals(signals: dict) -> dict:
     open_to_work = 1.0 if signals.get("open_to_work_flag", False) else 0.5
     notice_score = 1.0 if notice <= 30 else 0.8 if notice <= 60 else 0.65 if notice <= 90 else 0.5
     response_score = min(1.0, 0.25 + response_rate)
-    interview_score = min(1.0, 0.25 + interview_completion)
+    interview_score = max(0.0, min(1.0, interview_completion))
+    offer_rate = float(signals.get("offer_acceptance_rate", -1) or -1)
+    if offer_rate == -1:
+        offer_score = 0.60
+    elif offer_rate >= 0.7:
+        offer_score = 1.0
+    elif offer_rate >= 0.4:
+        offer_score = 0.75
+    else:
+        offer_score = 0.45
     if github == -1:
         github_score = 0.55
     elif github >= 50:
@@ -233,19 +283,21 @@ def score_redrob_signals(signals: dict) -> dict:
         github_score = 0.55
     else:
         github_score = 0.38
-    work_mode_score = 1.0 if signals.get("preferred_work_mode", "flexible") in {"hybrid", "flexible", "onsite"} else 0.72
+    saved = int(signals.get("saved_by_recruiters_30d", 0) or 0)
+    market_signal = min(1.0, saved / 50)
 
     availability = (
-        0.35 * recency_score
-        + 0.25 * open_to_work
-        + 0.20 * response_score
-        + 0.10 * notice_score
+        0.30 * recency_score
+        + 0.20 * open_to_work
+        + 0.18 * response_score
+        + 0.12 * notice_score
         + 0.10 * interview_score
+        + 0.10 * offer_score
     )
     engagement = (
-        0.65 * github_score
-        + 0.20 * work_mode_score
-        + 0.15 * min(1.0, float(signals.get("profile_completeness_score", 50) or 50) / 100)
+        0.55 * github_score
+        + 0.25 * market_signal
+        + 0.20 * min(1.0, float(signals.get("profile_completeness_score", 50) or 50) / 100)
     )
     return {
         "availability": availability,
@@ -257,6 +309,9 @@ def score_redrob_signals(signals: dict) -> dict:
         "github_score": github_score,
         "days_inactive": days_inactive,
         "notice_period_days": notice,
+        "offer_score": offer_score,
+        "interview_score": interview_score,
+        "market_signal": market_signal,
     }
 
 
@@ -347,6 +402,7 @@ def extract_all_features(candidate: dict) -> dict:
         "skill_groups": skill_groups,
         "text_groups": text_groups,
         "career": career_analysis,
+        "description_score": score_career_descriptions(career),
         "edu_score": score_education(education),
         "exp_score": score_experience_fit(float(profile.get("years_of_experience", 0) or 0)),
         "platform": score_redrob_signals(signals),
