@@ -1,0 +1,46 @@
+{
+  "embeddings": [
+    "sentence-transformers", "sentence transformers", "bge", "e5", "text embeddings",
+    "dense retrieval", "bi-encoder", "neural embeddings", "embedding models",
+    "openai embeddings", "cohere embeddings", "instructor embeddings",
+    "semantic search", "dense vectors", "text-embedding", "dual encoder",
+    "sbert", "vector embeddings"
+  ],
+  "vector_db": [
+    "faiss", "pinecone", "milvus", "weaviate", "qdrant", "chromadb", "chroma", "pgvector",
+    "opensearch", "elasticsearch", "vector search", "ann search",
+    "approximate nearest neighbor", "vector index", "vector store",
+    "hybrid search", "colbert", "sparse-dense hybrid", "hnsw"
+  ],
+  "ranking_retrieval": [
+    "information retrieval", "ir", "ranking systems", "search ranking",
+    "recommendation systems", "bm25", "tf-idf", "learning-to-rank", "ltr",
+    "ndcg", "mrr", "map", "recall@k", "precision@k", "retrieval pipeline",
+    "re-ranking", "reranker", "cross-encoder", "candidate retrieval",
+    "search relevance", "ranking evaluation", "ab testing", "a/b testing"
+  ],
+  "llm_finetuning": [
+    "lora", "qlora", "peft", "fine-tuning", "finetuning", "fine-tuning llms",
+    "instruction tuning", "rlhf", "dpo", "sft", "adapter layers",
+    "parameter-efficient fine-tuning", "model fine-tuning", "domain adaptation"
+  ],
+  "production_ml": [
+    "mlflow", "mlops", "model serving", "model deployment", "production ml",
+    "inference optimization", "torchserve", "tgi", "vllm", "bentoml",
+    "triton", "model monitoring", "a/b testing", "model registry",
+    "feature store", "online serving", "real-time inference", "deployed model",
+    "production deployment"
+  ],
+  "python_strong": [
+    "python", "python3", "pytorch", "tensorflow", "jax", "numpy", "pandas",
+    "scikit-learn", "sklearn", "hugging face", "transformers", "asyncio",
+    "fastapi", "flask"
+  ],
+  "nlp_ir": [
+    "nlp", "natural language processing", "text classification", "ner",
+    "named entity recognition", "text mining", "language models", "bert",
+    "gpt", "t5", "information extraction", "question answering",
+    "document retrieval", "passage retrieval", "rag", "retrieval augmented generation",
+    "llm", "large language model"
+  ]
+}

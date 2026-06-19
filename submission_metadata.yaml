@@ -1,0 +1,47 @@
+team_name: "candis"
+
+primary_contact:
+  name: "TBD"
+  email: "TBD"
+  phone: "TBD"
+
+team_members:
+  - name: "TBD"
+    email: "TBD"
+    role: "ML Engineer"
+
+github_repo: "TBD"
+sandbox_link: "TBD"
+reproduce_command: "python rank.py --candidates ./candidates.jsonl --out ./submission.csv"
+
+compute:
+  platform: "Local Windows CPU"
+  cpu_cores: 8
+  ram_gb: 16
+  python_version: "3.x"
+  os: "Windows"
+  uses_gpu_for_inference: false
+  has_network_during_ranking: false
+  pre_computation_required: false
+  pre_computation_time_minutes: 0
+
+ai_tools_used:
+  - "Codex"
+
+ai_usage_summary: |
+  Used Codex to implement and debug the local rule-based ranker. No external APIs
+  or candidate data are used during ranking.
+
+methodology_summary: |
+  CPU-only rule-based ranker that combines trust-weighted semantic skill groups,
+  career trajectory analysis, honeypot detection, and Redrob behavioral signals.
+  Final scoring is multiplicative: technical fit is reduced by poor career context
+  or low availability, preventing keyword stuffers and inactive profiles from
+  dominating the top ranks.
+
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true
+  reproduction_tested: true
